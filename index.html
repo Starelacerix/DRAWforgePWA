@@ -384,6 +384,76 @@
     .section h4 { margin: 0 0 8px; color: var(--secondary); letter-spacing: -0.02em; }
     .section p, .section li { color: var(--faint); line-height: 1.62; }
     .section p { margin: 0; }
+
+
+    .mode-options {
+      display: grid;
+      gap: 12px;
+      margin: 14px 0 4px;
+    }
+    .mode-deck {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .mode-card {
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.025));
+      border-radius: var(--radius-md);
+      padding: 12px;
+      min-height: 88px;
+      position: relative;
+      overflow: hidden;
+    }
+    .mode-card::after {
+      content: "";
+      position: absolute;
+      inset: auto -18px -28px auto;
+      width: 72px;
+      height: 72px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(255,213,64,.18), transparent 68%);
+      pointer-events: none;
+    }
+    .mode-card strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: .84rem;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+      color: var(--secondary);
+    }
+    .mode-card span {
+      color: var(--faint);
+      line-height: 1.45;
+      font-size: .92rem;
+    }
+    .mini-controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .tab-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,.045);
+    }
+    .tab-title-row b { color: var(--text); }
+    .tab-title-row small { color: var(--muted); }
+    .ai-command-strip {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .ai-command-strip .btn { justify-content: center; }
+    @media (max-width: 720px) {
+      .mode-deck, .mini-controls, .ai-command-strip { grid-template-columns: 1fr; }
+    }
     ol, ul { padding-left: 1.25rem; margin: 0; }
 
     .blueprint-preview {
@@ -538,7 +608,7 @@
             <div class="stat"><strong id="relicCount">0</strong><span>Saved Relics</span></div>
             <div class="stat"><strong id="drawnCount">0</strong><span>Marked Drawn</span></div>
             <div class="stat"><strong id="streakCount">0</strong><span>Practice Marks</span></div>
-            <div class="stat"><strong id="modeCount">6</strong><span>Modes</span></div>
+            <div class="stat"><strong id="modeCount">7</strong><span>Modes</span></div>
           </div>
           <div class="note">Your API key is never placed in source code. It is stored only in this browser if you save it.</div>
         </aside>
@@ -551,6 +621,7 @@
           <button class="tab" role="tab" aria-selected="false" data-tab="layers">Layer Recipe</button>
           <button class="tab" role="tab" aria-selected="false" data-tab="gym">Shape Gym</button>
           <button class="tab" role="tab" aria-selected="false" data-tab="mixer">Style Mixer</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="ai">AI Muse</button>
           <button class="tab" role="tab" aria-selected="false" data-tab="relics">Saved Relics</button>
         </div>
       </section>
@@ -563,6 +634,8 @@
               <p class="panel-kicker" id="controlHint">A small Procreate mission with steps, layers, and a finish line.</p>
             </div>
           </div>
+
+          <div class="mode-options" id="modeOptions" aria-live="polite"></div>
 
           <div class="form-grid">
             <div class="field">
@@ -685,7 +758,9 @@
       shapes: ["rounded triangle", "squircle", "soft diamond", "blob oval", "crescent frame", "wide shield", "capsule", "stacked circles", "wobbly star", "arched window"],
       skills: ["silhouette clarity", "line confidence", "simple shading", "layer order", "edge control", "tiny expressions", "glow placement", "texture restraint", "symbol readability", "color blocking"],
       decorations: ["stitched X eye", "spiral eye", "tiny star chip", "crooked bow", "crack line", "halo ring", "floating bead", "mini ribbon", "moon dent", "single gold repair seam", "soft blush mark", "little charm loop"],
-      styles: ["gothic sticker", "soft toy icon", "luxury app icon", "cosmic relic", "dream interface", "storybook badge", "weird mascot", "glassmorphic symbol", "ceramic charm", "ink sketch icon"]
+      styles: ["gothic sticker", "soft toy icon", "luxury app icon", "cosmic relic", "dream interface", "storybook badge", "weird mascot", "glassmorphic symbol", "ceramic charm", "ink sketch icon"],
+      focuses: ["thumbnail readability", "layer discipline", "gentle shading", "clean silhouette", "expressive asymmetry", "glossy highlight placement", "beginner confidence", "traceable proportions"],
+      repetitions: ["6 tiny versions", "8 silhouette reps", "10 quick shapes", "3 careful redraws", "1 polished final after 5 messy starts"]
     };
 
     const state = {
@@ -717,17 +792,26 @@
       toast.timer = setTimeout(() => el.classList.remove("show"), 2200);
     }
 
+    function fieldValue(id, fallback) {
+      const el = $("#" + id);
+      if (!el || !el.value || el.value === "Random") return fallback;
+      return el.value;
+    }
+
     function getIdeaParts() {
       const idea = $("#ideaInput").value.trim();
+      const chosenObject = fieldValue("objectSelect", pick(data.objects));
       return {
         idea,
-        object: idea || pick(data.objects),
-        material: state.selectedMaterial || pick(data.materials),
-        mood: state.selectedMood || pick(data.moods),
-        shape: pick(data.shapes),
-        skill: pick(data.skills),
-        decoration: pick(data.decorations),
-        style: pick(data.styles),
+        object: idea || chosenObject,
+        material: fieldValue("materialSelect", state.selectedMaterial || pick(data.materials)),
+        mood: fieldValue("moodSelect", state.selectedMood || pick(data.moods)),
+        shape: fieldValue("shapeSelect", pick(data.shapes)),
+        skill: fieldValue("skillSelect", pick(data.skills)),
+        decoration: fieldValue("decorationSelect", pick(data.decorations)),
+        style: fieldValue("styleSelect", pick(data.styles)),
+        focus: fieldValue("focusSelect", pick(data.focuses)),
+        reps: fieldValue("repsSelect", pick(data.repetitions)),
         difficulty: $("#difficultySelect").value,
         time: $("#timeSelect").value
       };
@@ -740,7 +824,8 @@
         blueprint: `${titleCase(p.object)} Trace Blueprint`,
         layers: `${titleCase(p.material)} Layer Recipe`,
         gym: `${titleCase(p.skill)} Shape Drill`,
-        mixer: `${titleCase(p.style)}: ${titleCase(p.object)}`
+        mixer: `${titleCase(p.style)}: ${titleCase(p.object)}`,
+        ai: `AI Muse: ${titleCase(p.object)} Refinement`
       };
 
       const goalMap = {
@@ -748,7 +833,8 @@
         blueprint: `Build a traceable ${p.object} blueprint with a simple outer silhouette, proportion zones, detail pockets, and freedom areas for Procreate experimentation.`,
         layers: `Practice a ${p.material} finish by stacking Procreate layers in a clean order instead of guessing while drawing.`,
         gym: `Repeat one small visual move until your hand stops arguing with your idea. Focus: ${p.skill}.`,
-        mixer: `Fuse object, mood, material, and style into one finished beginner-safe icon concept.`
+        mixer: `Fuse object, mood, material, and style into one finished beginner-safe icon concept.`,
+        ai: `Create a refined AI-ready Procreate brief for a ${p.mood} ${p.object}, focused on ${p.focus}. Use it locally or send it through AI Muse.`
       };
 
       const steps = mode === "layers" ? layerSteps(p.material) : mode === "gym" ? gymSteps(p) : [
@@ -757,7 +843,8 @@
         `Add one expressive detail: ${p.decoration}. Do not add five. One strong detail wins.`,
         `Add a shadow pass on a clipping mask. Keep it on one side only.`,
         `Add one highlight/glow pass that supports the ${p.material} feeling.`,
-        `Finish with three tiny polish marks: edge cleanup, texture speckle, and one small accent.`
+        `Finish with three tiny polish marks: edge cleanup, texture speckle, and one small accent.`,
+        `Check the main focus before stopping: ${p.focus}.`
       ];
 
       const blueprint = blueprintText(p);
@@ -774,7 +861,7 @@
         mode,
         title: titleMap[mode] || titleMap.daily,
         date: new Date().toISOString(),
-        tags: [p.difficulty, p.time, p.material, p.mood, p.skill],
+        tags: [p.difficulty, p.time, p.material, p.mood, p.skill, p.focus].filter(Boolean),
         prompt: goalMap[mode] || goalMap.daily,
         steps,
         blueprint,
@@ -812,7 +899,7 @@
 
     function gymSteps(p) {
       return [
-        `Draw 8 ${p.shape} silhouettes in a row. Make each one slightly different.`,
+        `Draw ${p.reps} using ${p.shape} silhouettes. Make each one slightly different.`,
         `Pick the clearest silhouette and draw it 3 more times.`,
         `Add only one detail to each version: eye, mouth, charm, crack, or halo.`,
         `Choose the best one and make a clean Procreate layer stack.`,
@@ -872,6 +959,94 @@
       $("#markDrawnBtn")?.addEventListener("click", markCurrentDrawn);
     }
 
+    function optionList(items, selected = "Random") {
+      return [`<option>Random</option>`, ...items.map(item => `<option ${item === selected ? "selected" : ""}>${escapeHtml(item)}</option>`)].join("");
+    }
+
+    function renderModeOptions(tab = state.tab) {
+      const el = $("#modeOptions");
+      if (!el) return;
+      const templates = {
+        daily: `
+          <div class="tab-title-row"><b>Daily Draw Deck</b><small>small mission · fast finish · no spiral</small></div>
+          <div class="mini-controls">
+            <div class="field"><label for="objectSelect">Main subject</label><select id="objectSelect">${optionList(data.objects)}</select></div>
+            <div class="field"><label for="focusSelect">Practice focus</label><select id="focusSelect">${optionList(data.focuses, "beginner confidence")}</select></div>
+          </div>
+          <div class="mode-deck">
+            <div class="mode-card"><strong>Finish line</strong><span>One readable drawing with a clear silhouette, one expression, one polish pass.</span></div>
+            <div class="mode-card"><strong>Best use</strong><span>Open Procreate, trace the base, finish before perfectionism wakes up.</span></div>
+          </div>`,
+        blueprint: `
+          <div class="tab-title-row"><b>Trace Blueprint Lab</b><small>construction zones · freedom zones</small></div>
+          <div class="mini-controls">
+            <div class="field"><label for="objectSelect">Blueprint subject</label><select id="objectSelect">${optionList(data.objects)}</select></div>
+            <div class="field"><label for="shapeSelect">Base silhouette</label><select id="shapeSelect">${optionList(data.shapes)}</select></div>
+            <div class="field"><label for="decorationSelect">Focal detail</label><select id="decorationSelect">${optionList(data.decorations)}</select></div>
+            <div class="field"><label for="focusSelect">Blueprint focus</label><select id="focusSelect">${optionList(data.focuses, "traceable proportions")}</select></div>
+          </div>
+          <div class="mode-deck">
+            <div class="mode-card"><strong>Trace logic</strong><span>Big outer shape first. Details sit in zones instead of floating randomly.</span></div>
+            <div class="mode-card"><strong>Freedom logic</strong><span>Change accessories, edge shape, eyes, and texture without breaking the structure.</span></div>
+          </div>`,
+        layers: `
+          <div class="tab-title-row"><b>Layer Recipe Bench</b><small>Procreate stack · material polish</small></div>
+          <div class="mini-controls">
+            <div class="field"><label for="materialSelect">Material</label><select id="materialSelect">${optionList(data.materials, state.selectedMaterial)}</select></div>
+            <div class="field"><label for="focusSelect">Layer focus</label><select id="focusSelect">${optionList(data.focuses, "layer discipline")}</select></div>
+            <div class="field"><label for="objectSelect">Practice object</label><select id="objectSelect">${optionList(data.objects)}</select></div>
+            <div class="field"><label for="shapeSelect">Shape base</label><select id="shapeSelect">${optionList(data.shapes)}</select></div>
+          </div>
+          <div class="mode-deck">
+            <div class="mode-card"><strong>Layer rule</strong><span>Sketch → base → clipping shadows → clipping highlights → face → texture → glow.</span></div>
+            <div class="mode-card"><strong>Procreate note</strong><span>Use clipping masks for polish so your base shape stays clean and editable.</span></div>
+          </div>`,
+        gym: `
+          <div class="tab-title-row"><b>Shape Gym</b><small>hand control · reps · confidence</small></div>
+          <div class="mini-controls">
+            <div class="field"><label for="skillSelect">Skill focus</label><select id="skillSelect">${optionList(data.skills)}</select></div>
+            <div class="field"><label for="shapeSelect">Shape drill</label><select id="shapeSelect">${optionList(data.shapes)}</select></div>
+            <div class="field"><label for="repsSelect">Repetition type</label><select id="repsSelect">${optionList(data.repetitions)}</select></div>
+            <div class="field"><label for="focusSelect">Mindset focus</label><select id="focusSelect">${optionList(data.focuses, "beginner confidence")}</select></div>
+          </div>
+          <div class="mode-deck">
+            <div class="mode-card"><strong>Do not polish early</strong><span>Messy reps first. Pick the strongest one only after your hand warms up.</span></div>
+            <div class="mode-card"><strong>Win condition</strong><span>Cleaner curves, clearer silhouette, less fear. Not a perfect finished piece.</span></div>
+          </div>`,
+        mixer: `
+          <div class="tab-title-row"><b>Style Mixer</b><small>object · mood · material · style fusion</small></div>
+          <div class="mini-controls">
+            <div class="field"><label for="objectSelect">Object</label><select id="objectSelect">${optionList(data.objects)}</select></div>
+            <div class="field"><label for="styleSelect">Style</label><select id="styleSelect">${optionList(data.styles)}</select></div>
+            <div class="field"><label for="shapeSelect">Shape language</label><select id="shapeSelect">${optionList(data.shapes)}</select></div>
+            <div class="field"><label for="focusSelect">Design focus</label><select id="focusSelect">${optionList(data.focuses, "thumbnail readability")}</select></div>
+          </div>
+          <div class="mode-deck">
+            <div class="mode-card"><strong>Fusion rule</strong><span>One object, one mood, one material, one style. Too many ingredients muddies the icon.</span></div>
+            <div class="mode-card"><strong>Thumbnail test</strong><span>Squint at it. If the shape reads, the details can stay weird.</span></div>
+          </div>`,
+        ai: `
+          <div class="tab-title-row"><b>AI Muse Console</b><small>OpenRouter optional · richer guidance</small></div>
+          <div class="mini-controls">
+            <div class="field"><label for="objectSelect">Subject to refine</label><select id="objectSelect">${optionList(data.objects)}</select></div>
+            <div class="field"><label for="focusSelect">AI focus</label><select id="focusSelect">${optionList(data.focuses, "traceable proportions")}</select></div>
+          </div>
+          <div class="ai-command-strip">
+            <button class="btn" type="button" data-ai-action="deepen">Deepen idea</button>
+            <button class="btn" type="button" data-ai-action="simplify">Beginner version</button>
+            <button class="btn" type="button" data-ai-action="blueprint">Trace blueprint</button>
+            <button class="btn" type="button" data-ai-action="layers">Layer stack</button>
+          </div>
+          <div class="mode-card"><strong>Safety note</strong><span>AI uses the cloud through OpenRouter. Keep your key in settings, never inside GitHub code.</span></div>`
+      };
+      el.innerHTML = templates[tab] || templates.daily;
+      $$('[data-ai-action]', el).forEach(btn => btn.addEventListener('click', () => {
+        const action = btn.dataset.aiAction;
+        const map = { deepen: 'deepen this into a richer Procreate drawing mission', simplify: 'make this beginner-friendly and smaller', blueprint: 'generate a traceable Procreate blueprint', layers: 'generate a Procreate layer stack and material recipe' };
+        callOpenRouter(map[action] || action);
+      }));
+    }
+
     function renderChips() {
       const materialChips = data.materials.slice(0, 10).map(item => `<button class="chip ${item === state.selectedMaterial ? "active" : ""}" data-chip="material" data-value="${escapeHtml(item)}">${escapeHtml(item)}</button>`).join("");
       const moodChips = data.moods.slice(0, 10).map(item => `<button class="chip ${item === state.selectedMood ? "active" : ""}" data-chip="mood" data-value="${escapeHtml(item)}">${escapeHtml(item)}</button>`).join("");
@@ -894,11 +1069,13 @@
         layers: ["Layer Recipe", "A Procreate layer stack for material studies and polish."],
         gym: ["Shape Gym", "Tiny repetitions for hand control, silhouettes, and confidence."],
         mixer: ["Style Mixer", "Fuse object, mood, material, and icon style into one concept."],
+        ai: ["AI Muse", "Use your OpenRouter key to deepen, simplify, blueprint, or layer-stack a mission."],
         relics: ["Saved Relics", "Review, copy, redraw, and mark your saved practice prompts."]
       };
       $("#controlTitle").textContent = labels[tab][0];
       $("#controlHint").textContent = labels[tab][1];
       $("#controlsPanel").classList.toggle("hidden", tab === "relics");
+      renderModeOptions(tab);
       renderResult(tab === "relics" ? state.current : makeMission(tab));
     }
 

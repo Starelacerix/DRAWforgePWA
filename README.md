@@ -1,26 +1,46 @@
-# Drawforge — Procreate Drawing Companion PWA
+# DRAWforge — Procreate Learning PWA
 
-Drawforge is a single-page, static, offline-first PWA for learning to draw in Procreate. It generates beginner-safe drawing missions, traceable blueprints, layer recipes, shape drills, style studies, saved practice cards, and optional OpenRouter AI Muse Mode.
+DRAWforge is a single-page, offline-first Procreate drawing companion for beginner icon, character, texture, lettering, and shape practice.
+
+## What changed in this amplified version
+
+- More organized tab structure:
+  - Daily Draw
+  - Trace Blueprint
+  - Layer Recipe
+  - Shape Gym
+  - Style Mixer
+  - AI Muse
+  - Saved Relics
+- Each mode now has its own option deck instead of sharing one generic control panel.
+- Added mode-specific selectors for object, shape, focus, skill, style, material, and repetition type.
+- Added clearer mini guidance cards inside each mode.
+- Added an AI Muse tab with direct command buttons for Deepen, Beginner Version, Trace Blueprint, and Layer Stack.
+- Kept the app static, client-side only, and GitHub Pages friendly.
 
 ## Files
 
-- `index.html` — complete app code
-- `manifest.webmanifest` — install metadata and icon references
-- `sw.js` — offline cache service worker
-- `ICON-192x192.png` — app icon
-- `ICON-512x512.png` — app icon
+```text
+index.html
+manifest.webmanifest
+sw.js
+ICON-192x192.png
+ICON-512x512.png
+README.md
+```
 
 ## Deploy on GitHub Pages
 
-1. Upload these files into the root of a GitHub repository.
-2. Commit the files.
-3. Open **Settings → Pages**.
-4. Choose **Deploy from branch**.
-5. Select `main` and `/root`.
-6. Save.
+1. Create a new GitHub repository.
+2. Upload all files from this folder into the repo root.
+3. Commit the files.
+4. Go to Settings → Pages.
+5. Choose Deploy from branch.
+6. Select `main` and `/root`.
+7. Save.
 
-## OpenRouter AI Mode
+## OpenRouter AI Muse
 
-Open the app, tap the settings gear, and paste your own OpenRouter API key into the local settings panel. Do not hard-code your API key into the source code. The key is stored only in your browser with `localStorage`.
+The app can work fully offline with local generators. To use AI Muse, open the settings gear in the app and paste your own OpenRouter API key. The key is stored only in your browser localStorage.
 
-Default model: `openrouter/free`
+Do not hard-code your API key into the GitHub files.

@@ -1,0 +1,25 @@
+{
+  "name": "Drawforge — Procreate Drawing Companion",
+  "short_name": "Drawforge",
+  "description": "An offline-first Procreate learning PWA with drawing missions, trace blueprints, layer recipes, shape drills, saved relics, glossy style studies, and optional OpenRouter AI Muse Mode.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#130421",
+  "theme_color": "#130421",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "ICON-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "ICON-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

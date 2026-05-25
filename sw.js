@@ -1,4 +1,4 @@
-const CACHE_NAME = "drawforge-v1.1.0";
+const CACHE_NAME = "drawforge-v1.4.0";
 const APP_SHELL = [
   "./",
   "./index.html",

@@ -198,6 +198,22 @@
     .btn.danger { color: var(--danger); }
     .btn.small { min-height: 38px; padding: 0 12px; font-size: 0.9rem; }
     .btn[disabled] { opacity: 0.45; cursor: not-allowed; transform: none; }
+    .result-inline-actions { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .ai-blueprint { padding: 8px; overflow: auto; }
+    .ai-blueprint svg { width: 100%; height: auto; display: block; border-radius: 16px; }
+    .teacher-note {
+      border: 1px solid color-mix(in srgb, var(--accent) 42%, transparent);
+      background: linear-gradient(135deg, rgba(255,210,50,0.12), rgba(38,199,255,0.08));
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      margin-top: 12px;
+    }
+    .teacher-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    @media (max-width: 760px) { .teacher-grid { grid-template-columns: 1fr; } }
 
     .hero {
       padding: 38px 0 22px;
@@ -662,6 +678,16 @@
               </select>
             </div>
 
+            <div class="field">
+              <label for="toolSelect">Procreate tool focus</label>
+              <select id="toolSelect"></select>
+            </div>
+
+            <div class="field">
+              <label for="lessonSelect">Teacher focus</label>
+              <select id="lessonSelect"></select>
+            </div>
+
             <div class="field" id="materialField">
               <label>Material Study</label>
               <div class="chips" id="materialChips"></div>
@@ -677,6 +703,7 @@
               <button class="btn" id="aiDeepenBtn">AI Deepen</button>
               <button class="btn" id="aiSimplifyBtn">Simplify</button>
               <button class="btn" id="aiBlueprintBtn">AI Blueprint</button>
+              <button class="btn" id="aiBlueprintImageBtn">AI Blueprint Image</button>
               <button class="btn" id="aiLayersBtn">AI Layers</button>
               <button class="btn ghost full" id="copyBtn">Copy Current</button>
               <button class="btn ghost full" id="saveBtn">Save to Relics</button>
@@ -752,15 +779,26 @@
     };
 
     const data = {
-      objects: ["mask", "ghost", "potion bottle", "star charm", "moon badge", "tiny creature head", "teacup", "key", "crystal fruit", "mushroom house", "winged envelope", "jelly heart", "crowned skull", "flower glyph", "button relic", "cat moon", "ribbon eye", "magic mirror", "soft toy monster", "lettermark badge"],
-      materials: ["jelly", "glass", "chrome", "velvet", "ceramic", "fogged acrylic", "crystal dust", "opal", "paper sticker", "soft plush", "molten candy", "aged metal"],
-      moods: ["sleepy", "chaotic", "shy", "haunted", "glamorous", "melancholy", "bratty", "dreamy", "ancient", "sweet but cursed", "lonely", "sparkly menace"],
-      shapes: ["rounded triangle", "squircle", "soft diamond", "blob oval", "crescent frame", "wide shield", "capsule", "stacked circles", "wobbly star", "arched window"],
-      skills: ["silhouette clarity", "line confidence", "simple shading", "layer order", "edge control", "tiny expressions", "glow placement", "texture restraint", "symbol readability", "color blocking"],
-      decorations: ["stitched X eye", "spiral eye", "tiny star chip", "crooked bow", "crack line", "halo ring", "floating bead", "mini ribbon", "moon dent", "single gold repair seam", "soft blush mark", "little charm loop"],
-      styles: ["gothic sticker", "soft toy icon", "luxury app icon", "cosmic relic", "dream interface", "storybook badge", "weird mascot", "glassmorphic symbol", "ceramic charm", "ink sketch icon"],
-      focuses: ["thumbnail readability", "layer discipline", "gentle shading", "clean silhouette", "expressive asymmetry", "glossy highlight placement", "beginner confidence", "traceable proportions"],
-      repetitions: ["6 tiny versions", "8 silhouette reps", "10 quick shapes", "3 careful redraws", "1 polished final after 5 messy starts"]
+      subjectTypes: ["mask", "character", "letter", "creature", "icon", "badge", "object", "food mascot", "banner / logo", "symbol / glyph"],
+      objects: ["mask", "character head", "full mini character", "single letter", "monogram badge", "ghost", "potion bottle", "star charm", "moon badge", "tiny creature head", "teacup", "key", "crystal fruit", "mushroom house", "winged envelope", "jelly heart", "crowned skull", "flower glyph", "button relic", "cat moon", "ribbon eye", "magic mirror", "soft toy monster", "lettermark badge", "food mascot", "sticker icon", "frame emblem", "banner logo", "amulet", "planet charm", "storybook object", "spellbook icon", "orb familiar", "candle mascot", "cake creature", "shell relic", "eye symbol", "pencil character", "berry sprite", "crown icon"],
+      materials: [
+        "jelly", "glass", "chrome", "velvet", "ceramic", "fogged acrylic", "crystal dust", "opal", "paper sticker", "soft plush", "molten candy", "aged metal",
+        "hologram film", "mercury gel", "frosted candy", "glitter vinyl", "porcelain glaze", "smoke glass", "neon acrylic", "plush felt", "obsidian stone", "pearl plastic",
+        "liquid metal", "sugar crystal", "wax seal", "weathered wood", "oil slick", "chrome foil", "soap bubble", "moonstone", "lava glaze", "aurora veil"
+      ],
+      moods: [
+        "sleepy", "chaotic", "shy", "haunted", "glamorous", "melancholy", "bratty", "dreamy", "ancient", "sweet but cursed", "lonely", "sparkly menace",
+        "mischievous", "wistful", "cozy", "nervous", "triumphant", "eerie cute", "regal", "forlorn", "stubborn", "flirty", "curious", "feral",
+        "angelic", "villainous", "punky", "bashful", "serene", "overloaded", "enchanted", "grumpy but lovable"
+      ],
+      procreateTools: ["6B Pencil sketch", "Monoline clean line", "Studio Pen clean edge", "Soft Airbrush shadow", "Soft Airbrush glow", "Gaussian Blur glow", "Clipping Mask shading", "Alpha Lock recolor", "Selection tool blocking", "Smudge soft blend", "Noise grain", "Liquify tiny shape fix"],
+      lessonFocuses: ["absolute beginner steps", "layer discipline", "traceable construction", "shape confidence", "clean sketch to clean base", "simple shadows", "simple highlights", "thumbnail readability", "color blocking", "how to stop overworking", "Procreate gestures", "redo practice"],
+      shapes: ["rounded triangle", "squircle", "soft diamond", "blob oval", "crescent frame", "wide shield", "capsule", "stacked circles", "wobbly star", "arched window", "puffy square", "petal burst"],
+      skills: ["silhouette clarity", "line confidence", "simple shading", "layer order", "edge control", "tiny expressions", "glow placement", "texture restraint", "symbol readability", "color blocking", "construction accuracy", "stylized anatomy"],
+      decorations: ["stitched X eye", "spiral eye", "tiny star chip", "crooked bow", "crack line", "halo ring", "floating bead", "mini ribbon", "moon dent", "single gold repair seam", "soft blush mark", "little charm loop", "sparkle freckles", "tiny badge pin", "drip edge", "cloud puff"],
+      styles: ["gothic sticker", "soft toy icon", "luxury app icon", "cosmic relic", "dream interface", "storybook badge", "weird mascot", "glassmorphic symbol", "ceramic charm", "ink sketch icon", "bubble mascot", "cute game badge"],
+      focuses: ["thumbnail readability", "layer discipline", "gentle shading", "clean silhouette", "expressive asymmetry", "glossy highlight placement", "beginner confidence", "traceable proportions", "construction accuracy", "simple value grouping"],
+      repetitions: ["6 tiny versions", "8 silhouette reps", "10 quick shapes", "3 careful redraws", "1 polished final after 5 messy starts", "4 simple variations", "12 tiny line warmups"]
     };
 
     const state = {
@@ -800,10 +838,15 @@
 
     function getIdeaParts() {
       const idea = $("#ideaInput").value.trim();
+      const mainType = fieldValue("mainTypeSelect", pick(data.subjectTypes));
       const chosenObject = fieldValue("objectSelect", pick(data.objects));
+      const letterValue = $("#letterInput")?.value?.trim() || "";
+      const chosenObjectFinal = mainType === "letter" && letterValue ? `${letterValue} letterform` : chosenObject;
       return {
         idea,
-        object: idea || chosenObject,
+        mainType,
+        letterValue,
+        object: idea || chosenObjectFinal,
         material: fieldValue("materialSelect", state.selectedMaterial || pick(data.materials)),
         mood: fieldValue("moodSelect", state.selectedMood || pick(data.moods)),
         shape: fieldValue("shapeSelect", pick(data.shapes)),
@@ -812,6 +855,8 @@
         style: fieldValue("styleSelect", pick(data.styles)),
         focus: fieldValue("focusSelect", pick(data.focuses)),
         reps: fieldValue("repsSelect", pick(data.repetitions)),
+        procreateTool: fieldValue("toolSelect", pick(data.procreateTools)),
+        lessonFocus: fieldValue("lessonSelect", pick(data.lessonFocuses)),
         difficulty: $("#difficultySelect").value,
         time: $("#timeSelect").value
       };
@@ -829,12 +874,12 @@
       };
 
       const goalMap = {
-        daily: `Draw a ${p.mood} ${p.object} using a ${p.shape} base, one clear focal detail, and a tiny finish line you can actually complete in ${p.time}.`,
+        daily: `Draw a ${p.mood} ${p.object} as a ${p.mainType || "main subject"}, using a ${p.shape} base, one clear focal detail, and a tiny finish line you can actually complete in ${p.time}.`,
         blueprint: `Build a traceable ${p.object} blueprint with a simple outer silhouette, proportion zones, detail pockets, and freedom areas for Procreate experimentation.`,
         layers: `Practice a ${p.material} finish by stacking Procreate layers in a clean order instead of guessing while drawing.`,
         gym: `Repeat one small visual move until your hand stops arguing with your idea. Focus: ${p.skill}.`,
-        mixer: `Fuse object, mood, material, and style into one finished beginner-safe icon concept.`,
-        ai: `Create a refined AI-ready Procreate brief for a ${p.mood} ${p.object}, focused on ${p.focus}. Use it locally or send it through AI Muse.`
+        mixer: `Fuse main subject type, mood, material, and style into one finished beginner-safe icon concept.`,
+        ai: `Create a refined AI-ready Procreate brief for a ${p.mood} ${p.object} ${p.mainType ? `(${p.mainType})` : ""}, focused on ${p.focus}. Use it locally or send it through AI Muse.`
       };
 
       const steps = mode === "layers" ? layerSteps(p.material) : mode === "gym" ? gymSteps(p) : [
@@ -856,6 +901,11 @@
         `Redraw it once as a softer version or a stranger version.`
       ];
 
+      const procreateSetup = procreateSetupSteps(p);
+      const teacherNotes = teacherNotesFor(p);
+      const mistakes = beginnerMistakes(p);
+      const checkpoints = selfCheckpoints(p);
+
       return {
         id: uid(),
         mode,
@@ -867,6 +917,10 @@
         blueprint,
         layers,
         freedom,
+        procreateSetup,
+        teacherNotes,
+        mistakes,
+        checkpoints,
         parts: p,
         source: "local"
       };
@@ -875,6 +929,7 @@
     function blueprintText(p) {
       return [
         `Outer silhouette: ${p.shape}, large enough to trace without tiny fragile edges.`,
+        `Main type: treat the subject as a ${p.mainType || "main object"} with a readable center of interest.`,
         `Center mass: keep the main ${p.object} body inside the middle 70%.`,
         `Face/detail zone: place ${p.decoration} near the upper-middle focal area.`,
         `Decoration zone: reserve one corner for a charm, crack, ribbon, halo, or sparkle.`,
@@ -907,7 +962,48 @@
       ];
     }
 
-    function blueprintSvg(result) {
+    function procreateSetupSteps(p) {
+      return [
+        `Canvas: start square, 2048×2048 or 3000×3000 if your iPad handles it.`,
+        `Layer 1: rough sketch using ${p.procreateTool || "6B Pencil sketch"} at low opacity.`,
+        `Layer 2: clean silhouette. Use a big brush first; do not start with tiny details.`,
+        `Layer 3+: use Clipping Mask for shadow, highlight, texture, and color polish.`,
+        `Gesture habit: two-finger undo often, but only after deciding what you learned from the mark.`,
+        `Final test: zoom out until it is tiny. The ${p.mainType || "subject"} should still read.`
+      ];
+    }
+
+    function teacherNotesFor(p) {
+      return [
+        `Teacher focus: ${p.lessonFocus || "absolute beginner steps"}. Treat this like a small lesson, not a performance.`,
+        `Draw big-to-small: silhouette → center mass → feature zones → expression → texture.`,
+        `Use one Procreate tool on purpose: ${p.procreateTool || "6B Pencil sketch"}. Repetition teaches faster than tool-hopping.`,
+        `Your goal is a clear ${p.shape}, not a perfect drawing. Clean shape beats fancy detail.`,
+        `When stuck, remove one detail and strengthen the outline.`
+      ];
+    }
+
+    function beginnerMistakes(p) {
+      return [
+        `Starting with tiny eyes/details before the main ${p.object} shape is readable.`,
+        `Using too many layers without naming them. Name: Sketch, Base, Shadow, Highlight, Details, Texture.`,
+        `Shading every side. Pick one shadow side and one light side.`,
+        `Zooming in too long. Zoom out every few minutes.`,
+        `Adding texture to hide uncertainty. Fix the silhouette first.`
+      ];
+    }
+
+    function selfCheckpoints(p) {
+      return [
+        `Can I trace the main silhouette in one slow pass?`,
+        `Can I explain the Procreate layer stack without guessing?`,
+        `Does the ${p.mood} mood show through one clear expression or pose?`,
+        `Does the ${p.material} material have one obvious highlight/shadow rule?`,
+        `Did I finish a beginner version before trying a fancy version?`
+      ];
+    }
+
+    function defaultBlueprintSvg(result) {
       const p = result.parts || {};
       const label = escapeHtml((p.object || "Relic").slice(0, 18));
       return `
@@ -933,6 +1029,26 @@
         </div>`;
     }
 
+    function blueprintMarkup(result) {
+      const svg = result?.aiBlueprintSvg || result?.blueprintSvg;
+      return svg ? `
+        <div class="blueprint-preview ai-blueprint" aria-label="AI blueprint image preview">${svg}</div>
+        <div class="result-inline-actions"><button class="btn small" id="downloadBlueprintBtn">Download SVG</button></div>
+      ` : defaultBlueprintSvg(result);
+    }
+
+    function downloadSvg(svgText, filename = "drawforge-blueprint.svg") {
+      const blob = new Blob([svgText], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
     function renderResult(result = state.current) {
       if (!result) result = makeMission("daily");
       state.current = result;
@@ -951,12 +1067,21 @@
         </div>
         <div class="tag-row">${result.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("")}</div>
         <div class="section"><h4>Mission</h4><p>${escapeHtml(result.prompt)}</p></div>
+        <div class="teacher-note"><h4>Beginner Teacher Lens</h4><ul>${ensureArray(result.teacherNotes, []).map(s => `<li>${escapeHtml(s)}</li>`).join("")}</ul></div>
+        <div class="section"><h4>Procreate Setup</h4><ol>${ensureArray(result.procreateSetup, []).map(s => `<li>${escapeHtml(s)}</li>`).join("")}</ol></div>
         <div class="section"><h4>Procreate Steps</h4><ol>${result.steps.map(s => `<li>${escapeHtml(s)}</li>`).join("")}</ol></div>
-        <div class="section"><h4>Trace Blueprint</h4><ul>${result.blueprint.map(s => `<li>${escapeHtml(s)}</li>`).join("")}</ul>${blueprintSvg(result)}</div>
+        <div class="section"><h4>Trace Blueprint</h4><ul>${result.blueprint.map(s => `<li>${escapeHtml(s)}</li>`).join("")}</ul>${blueprintMarkup(result)}</div>
         <div class="section"><h4>Layer Stack</h4><ol>${result.layers.map(s => `<li>${escapeHtml(s)}</li>`).join("")}</ol></div>
+        <div class="teacher-grid">
+          <div class="section"><h4>Common Beginner Traps</h4><ul>${ensureArray(result.mistakes, []).map(s => `<li>${escapeHtml(s)}</li>`).join("")}</ul></div>
+          <div class="section"><h4>Self-Check Before Stopping</h4><ul>${ensureArray(result.checkpoints, []).map(s => `<li>${escapeHtml(s)}</li>`).join("")}</ul></div>
+        </div>
         <div class="section"><h4>Creative Freedom</h4><ul>${result.freedom.map(s => `<li>${escapeHtml(s)}</li>`).join("")}</ul></div>
       `;
       $("#markDrawnBtn")?.addEventListener("click", markCurrentDrawn);
+      if (result.aiBlueprintSvg || result.blueprintSvg) {
+        $("#downloadBlueprintBtn")?.addEventListener("click", () => downloadSvg(result.aiBlueprintSvg || result.blueprintSvg, `${(result.title || "drawforge-blueprint").toLowerCase().replace(/[^a-z0-9]+/g, "-")}.svg`));
+      }
     }
 
     function optionList(items, selected = "Random") {
@@ -970,7 +1095,9 @@
         daily: `
           <div class="tab-title-row"><b>Daily Draw Deck</b><small>small mission · fast finish · no spiral</small></div>
           <div class="mini-controls">
+            <div class="field"><label for="mainTypeSelect">Main thing</label><select id="mainTypeSelect">${optionList(data.subjectTypes)}</select></div>
             <div class="field"><label for="objectSelect">Main subject</label><select id="objectSelect">${optionList(data.objects)}</select></div>
+            <div class="field"><label for="letterInput">Letter (optional)</label><input id="letterInput" placeholder="A, M, S..." maxlength="3" /></div>
             <div class="field"><label for="focusSelect">Practice focus</label><select id="focusSelect">${optionList(data.focuses, "beginner confidence")}</select></div>
           </div>
           <div class="mode-deck">
@@ -980,7 +1107,9 @@
         blueprint: `
           <div class="tab-title-row"><b>Trace Blueprint Lab</b><small>construction zones · freedom zones</small></div>
           <div class="mini-controls">
+            <div class="field"><label for="mainTypeSelect">Main thing</label><select id="mainTypeSelect">${optionList(data.subjectTypes, "mask")}</select></div>
             <div class="field"><label for="objectSelect">Blueprint subject</label><select id="objectSelect">${optionList(data.objects)}</select></div>
+            <div class="field"><label for="letterInput">Letter (optional)</label><input id="letterInput" placeholder="A, M, S..." maxlength="3" /></div>
             <div class="field"><label for="shapeSelect">Base silhouette</label><select id="shapeSelect">${optionList(data.shapes)}</select></div>
             <div class="field"><label for="decorationSelect">Focal detail</label><select id="decorationSelect">${optionList(data.decorations)}</select></div>
             <div class="field"><label for="focusSelect">Blueprint focus</label><select id="focusSelect">${optionList(data.focuses, "traceable proportions")}</select></div>
@@ -992,6 +1121,7 @@
         layers: `
           <div class="tab-title-row"><b>Layer Recipe Bench</b><small>Procreate stack · material polish</small></div>
           <div class="mini-controls">
+            <div class="field"><label for="mainTypeSelect">Main thing</label><select id="mainTypeSelect">${optionList(data.subjectTypes)}</select></div>
             <div class="field"><label for="materialSelect">Material</label><select id="materialSelect">${optionList(data.materials, state.selectedMaterial)}</select></div>
             <div class="field"><label for="focusSelect">Layer focus</label><select id="focusSelect">${optionList(data.focuses, "layer discipline")}</select></div>
             <div class="field"><label for="objectSelect">Practice object</label><select id="objectSelect">${optionList(data.objects)}</select></div>
@@ -1016,7 +1146,9 @@
         mixer: `
           <div class="tab-title-row"><b>Style Mixer</b><small>object · mood · material · style fusion</small></div>
           <div class="mini-controls">
+            <div class="field"><label for="mainTypeSelect">Main thing</label><select id="mainTypeSelect">${optionList(data.subjectTypes)}</select></div>
             <div class="field"><label for="objectSelect">Object</label><select id="objectSelect">${optionList(data.objects)}</select></div>
+            <div class="field"><label for="letterInput">Letter (optional)</label><input id="letterInput" placeholder="A, M, S..." maxlength="3" /></div>
             <div class="field"><label for="styleSelect">Style</label><select id="styleSelect">${optionList(data.styles)}</select></div>
             <div class="field"><label for="shapeSelect">Shape language</label><select id="shapeSelect">${optionList(data.shapes)}</select></div>
             <div class="field"><label for="focusSelect">Design focus</label><select id="focusSelect">${optionList(data.focuses, "thumbnail readability")}</select></div>
@@ -1028,13 +1160,16 @@
         ai: `
           <div class="tab-title-row"><b>AI Muse Console</b><small>OpenRouter optional · richer guidance</small></div>
           <div class="mini-controls">
+            <div class="field"><label for="mainTypeSelect">Main thing</label><select id="mainTypeSelect">${optionList(data.subjectTypes)}</select></div>
             <div class="field"><label for="objectSelect">Subject to refine</label><select id="objectSelect">${optionList(data.objects)}</select></div>
+            <div class="field"><label for="letterInput">Letter (optional)</label><input id="letterInput" placeholder="A, M, S..." maxlength="3" /></div>
             <div class="field"><label for="focusSelect">AI focus</label><select id="focusSelect">${optionList(data.focuses, "traceable proportions")}</select></div>
           </div>
           <div class="ai-command-strip">
             <button class="btn" type="button" data-ai-action="deepen">Deepen idea</button>
             <button class="btn" type="button" data-ai-action="simplify">Beginner version</button>
             <button class="btn" type="button" data-ai-action="blueprint">Trace blueprint</button>
+            <button class="btn" type="button" data-ai-action="blueprint-image">Blueprint image</button>
             <button class="btn" type="button" data-ai-action="layers">Layer stack</button>
           </div>
           <div class="mode-card"><strong>Safety note</strong><span>AI uses the cloud through OpenRouter. Keep your key in settings, never inside GitHub code.</span></div>`
@@ -1043,13 +1178,21 @@
       $$('[data-ai-action]', el).forEach(btn => btn.addEventListener('click', () => {
         const action = btn.dataset.aiAction;
         const map = { deepen: 'deepen this into a richer Procreate drawing mission', simplify: 'make this beginner-friendly and smaller', blueprint: 'generate a traceable Procreate blueprint', layers: 'generate a Procreate layer stack and material recipe' };
+        if (action === 'blueprint-image') return callOpenRouterBlueprintImage();
         callOpenRouter(map[action] || action);
       }));
     }
 
+    function renderGlobalTeacherSelects() {
+      const tool = $("#toolSelect");
+      const lesson = $("#lessonSelect");
+      if (tool) tool.innerHTML = optionList(data.procreateTools, "Clipping Mask shading");
+      if (lesson) lesson.innerHTML = optionList(data.lessonFocuses, "absolute beginner steps");
+    }
+
     function renderChips() {
-      const materialChips = data.materials.slice(0, 10).map(item => `<button class="chip ${item === state.selectedMaterial ? "active" : ""}" data-chip="material" data-value="${escapeHtml(item)}">${escapeHtml(item)}</button>`).join("");
-      const moodChips = data.moods.slice(0, 10).map(item => `<button class="chip ${item === state.selectedMood ? "active" : ""}" data-chip="mood" data-value="${escapeHtml(item)}">${escapeHtml(item)}</button>`).join("");
+      const materialChips = data.materials.map(item => `<button class="chip ${item === state.selectedMaterial ? "active" : ""}" data-chip="material" data-value="${escapeHtml(item)}">${escapeHtml(item)}</button>`).join("");
+      const moodChips = data.moods.map(item => `<button class="chip ${item === state.selectedMood ? "active" : ""}" data-chip="mood" data-value="${escapeHtml(item)}">${escapeHtml(item)}</button>`).join("");
       $("#materialChips").innerHTML = materialChips;
       $("#moodChips").innerHTML = moodChips;
       $$("[data-chip]").forEach(btn => btn.addEventListener("click", () => {
@@ -1069,7 +1212,7 @@
         layers: ["Layer Recipe", "A Procreate layer stack for material studies and polish."],
         gym: ["Shape Gym", "Tiny repetitions for hand control, silhouettes, and confidence."],
         mixer: ["Style Mixer", "Fuse object, mood, material, and icon style into one concept."],
-        ai: ["AI Muse", "Use your OpenRouter key to deepen, simplify, blueprint, or layer-stack a mission."],
+        ai: ["AI Muse", "Use your OpenRouter key to deepen, simplify, generate blueprint text, or generate a blueprint SVG image."],
         relics: ["Saved Relics", "Review, copy, redraw, and mark your saved practice prompts."]
       };
       $("#controlTitle").textContent = labels[tab][0];
@@ -1146,7 +1289,7 @@
 
     function formatResult(r = state.current) {
       if (!r) return "";
-      return `${r.title}\n\nMission:\n${r.prompt}\n\nProcreate Steps:\n${r.steps.map((s,i)=>`${i+1}. ${s}`).join("\n")}\n\nTrace Blueprint:\n${r.blueprint.map(s=>`- ${s}`).join("\n")}\n\nLayer Stack:\n${r.layers.map((s,i)=>`${i+1}. ${s}`).join("\n")}\n\nCreative Freedom:\n${r.freedom.map(s=>`- ${s}`).join("\n")}`;
+      return `${r.title}\n\nMission:\n${r.prompt}\n\nBeginner Teacher Lens:\n${ensureArray(r.teacherNotes, []).map(s=>`- ${s}`).join("\n")}\n\nProcreate Setup:\n${ensureArray(r.procreateSetup, []).map((s,i)=>`${i+1}. ${s}`).join("\n")}\n\nProcreate Steps:\n${r.steps.map((s,i)=>`${i+1}. ${s}`).join("\n")}\n\nTrace Blueprint:\n${r.blueprint.map(s=>`- ${s}`).join("\n")}\n\nLayer Stack:\n${r.layers.map((s,i)=>`${i+1}. ${s}`).join("\n")}\n\nCommon Beginner Traps:\n${ensureArray(r.mistakes, []).map(s=>`- ${s}`).join("\n")}\n\nSelf-Check:\n${ensureArray(r.checkpoints, []).map(s=>`- ${s}`).join("\n")}\n\nCreative Freedom:\n${r.freedom.map(s=>`- ${s}`).join("\n")}`;
     }
     async function copyText(text) {
       try { await navigator.clipboard.writeText(text); toast("Copied."); }
@@ -1175,12 +1318,16 @@ Return ONLY valid JSON with this exact shape:
   "title": "short evocative title",
   "prompt": "one clear mission paragraph",
   "tags": ["3-6 short tags"],
-  "steps": ["6-8 practical Procreate steps"],
+  "procreateSetup": ["5-7 exact Procreate setup/tool/layer instructions"],
+  "teacherNotes": ["4-6 plain beginner teaching notes"],
+  "steps": ["6-8 practical Procreate drawing steps"],
   "blueprint": ["5 construction blueprint bullets"],
   "layers": ["7-10 layer stack items"],
+  "mistakes": ["4-6 common beginner mistakes to avoid"],
+  "checkpoints": ["4-6 self-check questions before stopping"],
   "freedom": ["4 creative freedom bullets"]
 }
-No markdown fences. No extra commentary. Beginner-safe, vivid, practical, not overwhelming.`;
+No markdown fences. No extra commentary. Act as a powerful Procreate drawing teacher: clear, beginner-safe, practical, and not overwhelming. Prioritize Procreate workflow, layer order, traceable construction, and hand-skill learning.`;
 
       setBusy(true, `AI ${intent}…`);
       try {
@@ -1216,7 +1363,11 @@ No markdown fences. No extra commentary. Beginner-safe, vivid, practical, not ov
           tags: Array.isArray(parsed.tags) ? parsed.tags : base.tags,
           steps: ensureArray(parsed.steps, base.steps),
           blueprint: ensureArray(parsed.blueprint, base.blueprint),
+          procreateSetup: ensureArray(parsed.procreateSetup, base.procreateSetup),
+          teacherNotes: ensureArray(parsed.teacherNotes, base.teacherNotes),
           layers: ensureArray(parsed.layers, base.layers),
+          mistakes: ensureArray(parsed.mistakes, base.mistakes),
+          checkpoints: ensureArray(parsed.checkpoints, base.checkpoints),
           freedom: ensureArray(parsed.freedom, base.freedom)
         };
         state.current = result;
@@ -1226,6 +1377,85 @@ No markdown fences. No extra commentary. Beginner-safe, vivid, practical, not ov
       } catch (error) {
         console.error(error);
         toast(error.message || "AI request failed. Local generator still works.");
+        return null;
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    async function callOpenRouterBlueprintImage() {
+      const key = state.settings.apiKey;
+      if (!key) { toast("Add your OpenRouter key in settings first."); $("#settingsDialog").showModal(); return null; }
+      const base = state.current || makeMission(state.tab);
+      const parts = base.parts || getIdeaParts();
+      const prompt = `Create a clean traceable SVG blueprint image for Drawforge.
+Subject: ${parts.object}
+Main type: ${parts.mainType}
+Mood: ${parts.mood}
+Material: ${parts.material}
+Shape base: ${parts.shape}
+Decoration: ${parts.decoration}
+Focus: ${parts.focus}
+
+Return ONLY valid JSON with this exact shape:
+{
+  "title": "short title",
+  "blueprint": ["5 construction bullets"],
+  "svg": "<svg ...>...</svg>"
+}
+
+SVG requirements:
+- viewBox should be "0 0 360 300"
+- include a deep blue blueprint background inside the SVG
+- white or very light cyan linework only
+- centered main subject silhouette
+- include crosshair / guide lines and at least 2 construction guides
+- simple enough to trace in Procreate
+- no external fonts, scripts, or images
+- do not wrap in markdown fences.`;
+
+      setBusy(true, "AI blueprint image…");
+      try {
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${key}`,
+            "Content-Type": "application/json",
+            "HTTP-Referer": location.origin || "http://localhost",
+            "X-OpenRouter-Title": "Drawforge"
+          },
+          body: JSON.stringify({
+            model: state.settings.model || "openrouter/free",
+            messages: [
+              { role: "system", content: `${state.settings.systemTone || "Calm Procreate mentor."} You can also design clean SVG blueprint diagrams.` },
+              { role: "user", content: prompt }
+            ],
+            temperature: 0.6
+          })
+        });
+        const json = await response.json();
+        if (!response.ok) throw new Error(json?.error?.message || `OpenRouter error ${response.status}`);
+        const content = json?.choices?.[0]?.message?.content || "";
+        const parsed = parseAiJson(content);
+        if (!parsed?.svg || !String(parsed.svg).includes("<svg")) throw new Error("AI did not return a usable SVG blueprint image.");
+        const result = {
+          ...base,
+          id: uid(),
+          mode: state.tab === "relics" ? "blueprint" : state.tab,
+          date: new Date().toISOString(),
+          source: "ai",
+          aiBlueprintSvg: parsed.svg,
+          blueprint: ensureArray(parsed.blueprint, base.blueprint),
+          title: parsed.title || `${titleCase(parts.object)} Blueprint Image`,
+          parts
+        };
+        state.current = result;
+        renderResult(result);
+        toast("AI Muse generated a blueprint image.");
+        return result;
+      } catch (error) {
+        console.error(error);
+        toast(error.message || "AI blueprint image failed.");
         return null;
       } finally {
         setBusy(false);
@@ -1244,7 +1474,7 @@ No markdown fences. No extra commentary. Beginner-safe, vivid, practical, not ov
     function ensureArray(value, fallback) { return Array.isArray(value) && value.length ? value : fallback; }
 
     function setBusy(isBusy, label = "Working…") {
-      const buttons = ["#generateBtn", "#aiDeepenBtn", "#aiSimplifyBtn", "#aiBlueprintBtn", "#aiLayersBtn"];
+      const buttons = ["#generateBtn", "#aiDeepenBtn", "#aiSimplifyBtn", "#aiBlueprintBtn", "#aiBlueprintImageBtn", "#aiLayersBtn"];
       buttons.forEach(sel => $(sel).disabled = isBusy);
       if (isBusy) $("#generateBtn").textContent = label;
       else $("#generateBtn").textContent = "Generate";
@@ -1283,6 +1513,7 @@ No markdown fences. No extra commentary. Beginner-safe, vivid, practical, not ov
       $("#aiDeepenBtn").addEventListener("click", () => callOpenRouter("deepen the prompt into a richer but still beginner-safe mission"));
       $("#aiSimplifyBtn").addEventListener("click", () => callOpenRouter("make this easier, smaller, and less perfectionism-triggering"));
       $("#aiBlueprintBtn").addEventListener("click", () => callOpenRouter("generate a traceable construction blueprint"));
+      $("#aiBlueprintImageBtn").addEventListener("click", () => callOpenRouterBlueprintImage());
       $("#aiLayersBtn").addEventListener("click", () => callOpenRouter("generate a Procreate layer stack and material recipe"));
       $("#clearRelicsBtn").addEventListener("click", () => {
         if (!state.relics.length) return;
@@ -1313,6 +1544,7 @@ No markdown fences. No extra commentary. Beginner-safe, vivid, practical, not ov
 
     function init() {
       renderChips();
+      renderGlobalTeacherSelects();
       wireEvents();
       applyTheme();
       updateStats();
